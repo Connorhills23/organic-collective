@@ -1,62 +1,87 @@
-create table users (
-  clerk_id INT primary key generated always as identity,
-  f_name varchar(50),
-  l_name varchar(250),
-  m_name varchar(250),
-  age bigint,
-  bio varchar(500),
-  new_column bigint -- new_column doesn't do anything it's just an oversight
+CREATE TABLE USERS (
+  CLERK_ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  F_NAME VARCHAR(50),
+  L_NAME VARCHAR(250),
+  M_NAME VARCHAR(250),
+  AGE BIGINT,
+  BIO VARCHAR(500),
+  NEW_COLUMN BIGINT -- NEW_COLUMN DOESN'T DO ANYTHING IT'S JUST AN OVERSIGHT
 )
 
 -- Seed data users
-insert into
-  users (f_name, L_name, M_name, Age, Bio, new_column)
-values
-  ('dave','wanger','wonger',43,'this worlds magic',1)
+INSERT INTO
+  USERS (F_NAME, L_NAME, M_NAME, AGE, BIO, NEW_COLUMN)
+VALUES
+  ('DAVE','WANGER','WONGER',43,'THIS WORLDS MAGIC',1)
 
-create table post (
-  id INT primary key generated always as identity,
-  sender bigint references users (clerk_id), -- references the user(id) of the poster
-  Msg varchar(250), -- atm this is just text but we could use this for now until we make a list of items table for groceries
-  reply_To bigint references post(id), --references the post(id) it responds to instead of post sender as 1 sender can have many posts
-  Done boolean
+CREATE TABLE POST (
+  ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  SENDER BIGINT REFERENCES USERS (CLERK_ID), -- REFERENCES THE USER(ID) OF THE POSTER
+  MSG VARCHAR(250), -- ATM THIS IS JUST TEXT BUT WE COULD USE THIS FOR NOW UNTIL WE MAKE A LIST OF ITEMS TABLE FOR GROCERIES
+  REPLY_TO BIGINT REFERENCES POST(ID), --REFERENCES THE POST(ID) IT RESPONDS TO INSTEAD OF POST SENDER AS 1 SENDER CAN HAVE MANY POSTS
+  DONE BOOLEAN
 )
 
 -- hello Seed data post
-  insert into
-    Post (sender, Msg, reply_to, done)
-  values
-    (1, 'i have this julie', 1, true)
+  INSERT INTO
+    POST (SENDER, MSG, REPLY_TO, DONE)
+  VALUES
+    (1, 'I HAVE THIS JULIE', 1, TRUE)
 
-create table Posts_reactions (
-  id INT primary key generated always as identity,
-  reaction varchar(1),
-  user_id bigint references users(clerk_id),
-  post_id bigint references post(id)
-  -- could make the id (user_id, post_id) in order to force the db to only have 1 reaction per user unless we want the user to be able to make multiple reactions
-  -- or do (user_id, post_id, reaction) to make it so they can still do multiple reactions but not of the same letter/emoji
+CREATE TABLE POSTS_REACTIONS (
+  ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  REACTION VARCHAR(1),
+  USER_ID BIGINT REFERENCES USERS(CLERK_ID),
+  POST_ID BIGINT REFERENCES POST(ID)
+  -- COULD MAKE THE ID (USER_ID, POST_ID) IN ORDER TO FORCE THE DB TO ONLY HAVE 1 REACTION PER USER UNLESS WE WANT THE USER TO BE ABLE TO MAKE MULTIPLE REACTIONS
+  -- OR DO (USER_ID, POST_ID, REACTION) TO MAKE IT SO THEY CAN STILL DO MULTIPLE REACTIONS BUT NOT OF THE SAME LETTER/EMOJI
 )
-  insert into
-    posts_reactions (reaction, user_id, post_id)
-  values
-    ('w', 1, 1)
+  -- SEED POST_REACTIONS
+(
+  INSERT INTO
+    POSTS_REACTIONS (REACTION, USER_ID, POST_ID)
+  VALUES
+    ('W', 1, 1)
     
-  select
-    poster.f_name as poster_first_name,
-    poster.l_name as poster_last_name,
-    poster.clerk_id as poster_clerk_id,
-    p.msg as post_content,
-    p.id as post_id,
-    r.reaction as reaction_given,
-    r.id as reaction_id,
-    reactor.f_name as reactor_first_name,
-    reactor.l_name as reactor_last_name,
-    reactor.clerk_id as reactor_clerk_id
-  from
-    post p
-    join users poster on p.sender = poster.clerk_id
-    join posts_reactions r on p.id = r.post_id
-    join users reactor on r.user_id = reactor.clerk_id
-  order by
-    p.id;
+  SELECT
+    POSTER.F_NAME AS POSTER_FIRST_NAME,
+    POSTER.L_NAME AS POSTER_LAST_NAME,
+    POSTER.CLERK_ID AS POSTER_CLERK_ID,
+    P.MSG AS POST_CONTENT,
+    P.ID AS POST_ID,
+    R.REACTION AS REACTION_GIVEN,
+    R.ID AS REACTION_ID,
+    REACTOR.F_NAME AS REACTOR_FIRST_NAME,
+    REACTOR.L_NAME AS REACTOR_LAST_NAME,
+    REACTOR.CLERK_ID AS REACTOR_CLERK_ID
+  FROM
+    POST P
+    JOIN USERS POSTER ON P.SENDER = POSTER.CLERK_ID
+    JOIN POSTS_REACTIONS R ON P.ID = R.POST_ID
+    JOIN USERS REACTOR ON R.USER_ID = REACTOR.CLERK_ID
+  ORDER BY
+    P.ID;
+)
+
+---- Grocery lists
+
+CREATE TABLE LISTS (
+  ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  USER_ID INT REFERENCES USERS (CLERK_ID),
+  LIST_NAME TEXT,
+  HOUSE_SHARE BOOLEAN,
+  STREET_SHARE BOOLEAN,
+  CREATED_AT TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  UPDATED_AT TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+)
+
+CREATE TABLE LIST_ITEM (
+  ID INT PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+  LIST_ID REFERENCES LISTS (ID),
+  ITEM_NAME TEXT,
+  DONE BOOLEAN
+)
+
+
+
 
